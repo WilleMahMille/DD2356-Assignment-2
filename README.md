@@ -101,5 +101,6 @@ The critical performs much worse than the paralell function, the reason for this
    | 128 | 0.332444 |
 
 4. Which performance optimizations (think about what you learned in the previous module) would be suitable for DFT other than parallelization with OpenMP? Explain, no need to implement the optimizations.
-   Obviously parallelizing this module is benefitial and improves the performance, however in addition to that we can also use spatial caching since there is a lot of array-index checking within the for loop. If we can increase the number of cache hits within the inner for loop then we gain a lot of time.
-   It should also be possible to use reduction to make the summation go faster.
+
+Obviously parallelizing this module is benefitial and improves the performance, however in addition to that we can also use spatial caching since there is a lot of array-index checking within the for loop. If we can increase the number of cache hits within the inner for loop then we gain a lot of time.
+It should also be possible to use reduction to make the summation go faster.
