@@ -30,6 +30,14 @@ make run-1
 ### Questions
 
 1. Run the STREAM benchmark five times and record the average bandwidth values and its standard deviation for the copy kernel. Prepare a plot (with error bars) comparing the bandwidth using 1,32,64, and 128 threads.
+   ![](./2/2.graph.png)
 2. How does the measured bandwidth with the copy kernel depend on the number of threads?
+   It increases up until the point where the CPU can fit all the data in it's cache, at which point it doesn't change significantly.
 3. Prepare another plot comparing the bandwidth measured with copy kernel with static, dynamic, and guided schedules using 128 threads.
+   ![](./2/2.modified.png)
 4. How do you set the schedule in the STREAM code? What is the fastest schedule, and why do you think it is so?
+   By changing the schedule type in  
+   `// HERE YOU CAN CAN CHANGE SCHEDULE`  
+   `#pragma omp parallel for schedule(guided)`
+   The fastest schedule appears to be the static one, and that is likely due to cache locality, and how the CPU automatically caches the nearby neighbors of the matrix.
+   This would speed up static scheduling since it creates larger blocks, and slow down dynamic since it creates split up blocks, which is exactly what we see.
