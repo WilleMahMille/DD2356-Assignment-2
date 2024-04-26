@@ -36,15 +36,62 @@ make run-1
 
 ## Excercise 3 - Parallel Sum
 
-```c
-double serial_sum(double *x, size_t size)
-{
-  double sum_val = 0.0;
+1. Measure the performance of the serial code (average + standard deviation).
+   The first serial summation yields the following result:
+   **0.030918s** with the standard deviation of **0.003532s**
+2. Implement a parallel version of the serial_sum called omp_sum and use the omp parallel for construct to parallelize the program. Run the code with 32 threads and measure the execution time (average + standard deviation). Should the code be working correctly? If not, why not?
+   **0.010877** for the average execution time, with a standard deviation of **0.001138**
+3. Implement a new version called omp_critical_sum and use the omp critical to protect the code region that might be updated by multiple threads concurrently. Measure the execution time for the code in questions 2 and 3 by varying the number of threads: 1, 2, 4, 8, 16, 20, 24, 28, and 32. How does the performance compare to the program in questions 1 and 2? What is the reason for the performance gain/loss?
 
-  for (size_t i = 0; i < size; i++) {
-    sum_val += x[i];
-  }
+| Threads | OMP average (s) | OMP stdev (s) | OMP_Critical average (s) | OMP critical stdev (s) |
+| ------- | --------------- | ------------- | ------------------------ | ---------------------- |
+| 1       | 0.030775        | 0.004164      | 0.148550                 | 0.002014               |
+| 2       | 0.014511        | 0.000206      | 0.603945                 | 0.024622               |
+| 4       | 0.009709        | 0.002888      | 0.876019                 | 0.047986               |
+| 8       | 0.009071        | 0.001698      | 0.796292                 | 0.065304               |
+| 16      | 0.009845        | 0.001611      | 0.791318                 | 0.047733               |
+| 20      | 0.009608        | 0.000938      | 0.700794                 | 0.088253               |
+| 24      | 0.009032        | 0.000654      | 0.731100                 | 0.036617               |
+| 28      | 0.009018        | 0.000725      | 0.822434                 | 0.030504               |
+| 32      | 0.011317        | 0.007199      | 0.708248                 | 0.046975               |
 
-  return sum_val;
-}
-```
+The critical performs much worse than the paralell function, the reason for this is that we create a bottleneck directly after paralellizing, spending resources on spinning up threads, then not using them. Since only one thread can go through the summation operation at a time in the critical mode, we loose all the gains, making it useless in this specific scenario.
+
+4. Try to avoid the use of a critical section. Implement a new version called omp_local_sum. Let each thread find the local sum in its own data, then combine their local result to get the final result. For instance, we can use temporary arrays indexed by their thread number to hold the values found by each thread, like the code below.
+
+- double local_sum[MAX_THREADS];
+- Measure the performance of the new implementation, varying the number of threads to 1,32,64 and 128 threads. Does the performance increase as expected? If not, why not?
+
+| Threads | Average time | Standard deviation |
+| ------- | ------------ | ------------------ |
+| 1       | 0.032180     | 0.003682           |
+| 32      | 0.021223     | 0.006190           |
+| 64      | 0.014025     | 0.002157           |
+| 128     | 0.011615     | 0.001602           |
+
+5. Write a new version of the code in question 4 called opt_local_sum using a technique to remove false sharing with padding. Measure the performance of the code by varying the number of threads to 1, 32, 64, and 128.
+
+| Threads | Average time | Standard deviation |
+| ------- | ------------ | ------------------ |
+| 1       | 0.029667     | 0.000946           |
+| 32      | 0.009408     | 0.000889           |
+| 64      | 0.009614     | 0.002048           |
+| 128     | 0.009427     | 0.001502           |
+
+## Excercise 4
+
+1. Parallelize the DFTW code with OpenMP. You can develop different strategies. The important point is that the code produces the correct results and is fast!
+   ✅
+2. Measure the performance on Dardel 32 cores, reporting the average values and standard deviation for DFTW using an input size equal to 10000 (N=10000).
+   The average value is 0.8316936 with a standard deviation of 0.008005.
+3. Prepare a speed-up plot varying the number of threads: 1,32,64, and 128.
+   | Threads | Execution time |
+   | ------- | ------------ |
+   | 1 | 25.933433 |
+   | 32 | 0.837960 |
+   | 64 | 0.438074 |
+   | 128 | 0.332444 |
+
+4. Which performance optimizations (think about what you learned in the previous module) would be suitable for DFT other than parallelization with OpenMP? Explain, no need to implement the optimizations.
+   Obviously parallelizing this module is benefitial and improves the performance, however in addition to that we can also use spatial caching since there is a lot of array-index checking within the for loop. If we can increase the number of cache hits within the inner for loop then we gain a lot of time.
+   It should also be possible to use reduction to make the summation go faster.
