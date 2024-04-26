@@ -33,3 +33,18 @@ make run-1
 2. How does the measured bandwidth with the copy kernel depend on the number of threads?
 3. Prepare another plot comparing the bandwidth measured with copy kernel with static, dynamic, and guided schedules using 128 threads.
 4. How do you set the schedule in the STREAM code? What is the fastest schedule, and why do you think it is so?
+
+## Excercise 3 - Parallel Sum
+
+```c
+double serial_sum(double *x, size_t size)
+{
+  double sum_val = 0.0;
+
+  for (size_t i = 0; i < size; i++) {
+    sum_val += x[i];
+  }
+
+  return sum_val;
+}
+```
